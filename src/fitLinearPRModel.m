@@ -82,7 +82,7 @@ plot(TargetResp);
 % The following lines search for the best fit linear model coefficients.
 
 % Initialize an error variable for the current coefficients.
-err = ConeModelLinWrapper(coefLin);
+err = PhotoreceptorModelLinWrapper(coefLin);
 
 
 % Initialize global variable to store error values
@@ -93,7 +93,7 @@ errorHistory = [];
 options = optimset('MaxFunEvals', 100, 'OutputFcn', @outfun);
 
 for iter = 1:2
-    fitcoef = fminsearch(@ConeModelLinWrapper, coefLin, options);
+    fitcoef = fminsearch(@PhotoreceptorModelLinWrapper, coefLin, options);
     coefLin = fitcoef;
 end
 

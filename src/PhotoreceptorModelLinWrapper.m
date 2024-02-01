@@ -23,7 +23,7 @@
 %   If the Verbose flag is set to 1, the function plots both the predicted response
 %   and the target response for visual comparison.
 
-function err = ConeModelLinWrapper(coef)
+function err = PhotoreceptorModelLinWrapper(coef)
     % Access global variables with the target response, stimulus, dark current, and timestep.
     global TargetResp
     global TargetStm
