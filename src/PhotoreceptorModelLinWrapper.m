@@ -1,4 +1,4 @@
-% ConeModelLinWrapper
+% PhotoreceptorModelLinWrapper
 %
 % Purpose:
 %   Evaluates the fit of a linear model to the response of a photoreceptor.
