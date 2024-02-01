@@ -32,11 +32,6 @@ linearModelCoef = defineLinearModelCoefficients();
 coefLin=linearModelCoef.(modelType);
 coefLin=coefLin(3,2:4);   % mean light level of 5000 R*/cone/s see defineLinearModelCoefficients.m 
 
-
-%% -------------------------------------------------------
-%% Step 3: generate initial stimulus
-%% -------------------------------------------------------
-
 %% Step 3: generate initial stimulus
 %% -------------------------------------------------------
 % Set the mean intensity of the stimulus in R*/s (Rhodopsin activations per second).
