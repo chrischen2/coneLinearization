@@ -4,8 +4,8 @@ About the Light Adaptation Clamp Tool
 In this repository, we present a sophisticated tool called `Light Adaptation Clamp (LaC)` capable of designing light stimuli that specifically and predictably modulate phototransduction currents in both rod and cone photoreceptors. This tool adeptly accounts for and compensates for nonlinear characteristics, such as light adaptation, inherent in phototransduction processes. Developed on the foundation of well-established models of the rod and cone phototransduction cascade, it enables a clear distinction between the nonlinearities associated with phototransduction and those present in subsequent neural circuits. Consequently, this tool opens up new possibilities for directly investigating the influence of photoreceptor adaptation on downstream visual signals and perception.
 
 Repository Contents
-Source Code: The src folder contains the MATLAB scripts and functions used to implement the light adaptation clamp tool. It includes routines for simulating photoreceptor responses, estimating stimuli, and more.
-Mathematical Formulations: Detailed LaTeX equations provided in GitHub Wiki elucidate the mathematical concepts and equations that form the basis of our simulations and analyses.
+Source Code: The `src` folder contains the MATLAB scripts and functions used to implement the light adaptation clamp tool. It includes routines for simulating photoreceptor responses, estimating stimuli, and more.
+Mathematical Formulations: Detailed LaTeX equations provided in `GitHub Wiki` elucidate the mathematical concepts and equations that form the basis of our simulations and analyses.
 Usage Examples: Practical examples and usage scenarios are showncased in `demoMain.m` to help users understand how to apply the tool in their research.
 
 Contributing
