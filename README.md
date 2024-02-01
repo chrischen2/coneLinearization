@@ -2,7 +2,7 @@ Welcome to the  repository for the "Light Adaptation Clamp" tool, as described i
 
 **About the Light Adaptation Clamp Tool**
 
-In this repository, we present a sophisticated tool called `Light Adaptation Clamp (LaC)` capable of designing light stimuli that specifically and predictably modulate phototransduction currents in both rod and cone photoreceptors. This tool adeptly accounts for and compensates for nonlinear characteristics, such as light adaptation, inherent in phototransduction processes. Developed on the foundation of well-established models of the rod and cone phototransduction cascade, it enables a clear distinction between the nonlinearities associated with phototransduction and those present in subsequent neural circuits. Consequently, this tool opens up new possibilities for directly investigating the influence of photoreceptor adaptation on downstream visual signals and perception.
+In this repository, we present a  tool called `Light Adaptation Clamp (LaC)` capable of designing light stimuli that specifically and predictably modulate phototransduction currents in both rod and cone photoreceptors. This tool  accounts for and compensates for nonlinear characteristics, such as light adaptation, inherent in phototransduction processes. Developed on the foundation of well-established models of the rod and cone phototransduction cascade, it enables separation between the nonlinearities associated with phototransduction and those present in subsequent neural circuits. Consequently, this tool opens up new possibilities for directly investigating the influence of photoreceptor adaptation on downstream visual signals and perception.
 
 **Repository Contents**
 
@@ -12,8 +12,8 @@ Usage Examples: Practical examples and usage scenarios are showncased in `demoMa
 
 **Contributing**
 
-We welcome contributions from the scientific community. If you have suggestions, bug reports, or improvements, please feel free to open an issue or submit a pull request.
+If you have suggestions, bug reports, or improvements, please feel free to open an issue or submit a pull request.
 
 **Citation**
 
-If you use this tool in your research, please cite our publication: [Chen 2023](https://www.biorxiv.org/content/10.1101/2023.10.20.563304v1)
+If you use this tool in your research, please cite: [Chen 2023](https://www.biorxiv.org/content/10.1101/2023.10.20.563304v1)
