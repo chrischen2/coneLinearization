@@ -2,11 +2,18 @@
 clearvars; close all;
 
 %% load the source spectrum
-[fileS,pathS]=uigetfile('/Users/chrischen/Library/CloudStorage/Dropbox/research/resources/spectrums/sources/*.txt','multiselect','on');
-for i=1:length(fileS)
-    prSpec.(regexprep(fileS{i},'.txt',''))=dlmread([pathS fileS{i}]);
-    receptor.(regexprep(fileS{i},'.txt','')).values= prSpec.(regexprep(fileS{i},'.txt',''))(:,2);
-    receptor.(regexprep(fileS{i},'.txt','')).wavelengths= prSpec.(regexprep(fileS{i},'.txt',''))(:,1)*(10^-9);
+species='mouse';   % or primate
+spectrum_path=fullfile(pwd, 'spectrums/sources', species);
+spectrum_files=dir(fullfile(spectrum_path,'*.txt'));
+
+for i=1:length(spectrum_files)
+    % Full path to the spectrum .txt file
+    IndSpectrumPath = fullfile(spectrum_path, spectrum_files(i).name);
+
+    spectrum = readmatrix(IndSpectrumPath);
+
+    receptor.(regexprep(spectrum_files(i).name,'.txt','')).values= spectrum(:,2);
+    receptor.(regexprep(spectrum_files(i).name,'.txt','')).wavelengths= spectrum(:,1)*(10^-9);
 end
 
 %% load the device spectrum
