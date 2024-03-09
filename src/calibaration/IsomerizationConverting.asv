@@ -1,295 +1,113 @@
-% main
+% Clear all variables from the workspace and close all figures to ensure a clean start
 clearvars; close all;
 
-%load the source spectrum
-species='mouse';   % or primate
-spectrum_path=fullfile(pwd, 'spectrums/sources', species);
-spectrum_files=dir(fullfile(spectrum_path,'*.txt'));
+%% Load the Source Spectrum
+% Define the species to load corresponding photoreceptor spectra, can be 'mouse' or 'primate'
+species = 'mouse';
 
-for i=1:length(spectrum_files)
-    % Full path to the spectrum .txt file
-    photoreceptorNames{i}=regexprep(spectrum_files(i).name,'_spectrum.txt','');
+% Construct the path to the folder containing spectral data files for the specified species
+spectrum_path = fullfile(pwd, 'spectrums/sources', species);
+
+% List all text files in the spectrum path
+spectrum_files = dir(fullfile(spectrum_path, '*.txt'));
+
+% Loop over each spectrum file found in the directory
+for i = 1:length(spectrum_files)
+    % Extract the name of the photoreceptor from the file name
+    photoreceptorNames{i} = regexprep(spectrum_files(i).name, '_spectrum.txt', '');
+    
+    % Full path to the current spectrum file
     IndSpectrumPath = fullfile(spectrum_path, spectrum_files(i).name);
+    
+    % Read the spectrum data from the file
     spectrum = readmatrix(IndSpectrumPath);
-    receptor.(photoreceptorNames{i}).values= spectrum(:,2);
-    receptor.(photoreceptorNames{i}).wavelengths= spectrum(:,1)*(10^-9);
+    
+    % Store the spectral values and wavelengths (converted to meters) in a structured array
+    receptor.(photoreceptorNames{i}).values = spectrum(:, 2);
+    receptor.(photoreceptorNames{i}).wavelengths = spectrum(:, 1) * (10^-9);
 end
 
-% load the device spectrum
-device_path=fullfile(pwd, 'spectrums/devices/');
-device_files=dir(fullfile(device_path,'*.txt'));
-for i=1:length(device_files)
-    deviceNames{i}=regexprep(device_files(i).name,'_spectrum.txt','');
+% Load the Device Spectrum
+% Define the path to the folder containing device spectral data
+device_path = fullfile(pwd, 'spectrums/devices/');
+
+% List all text files in the device path
+device_files = dir(fullfile(device_path, '*.txt'));
+
+% Loop over each device spectrum file found
+for i = 1:length(device_files)
+    % Extract the base name of the device from the file name
+    deviceNames{i} = regexprep(device_files(i).name, '_spectrum.txt', '');
+    
+    % Full path to the current device spectrum file
     IndDevicePath = fullfile(device_path, device_files(i).name);
+    
+    % Read the device spectrum data from the file
     deviceSpectrum = readmatrix(IndDevicePath);
-    device.(deviceNames{i}).values= deviceSpectrum(:,2);
-    device.(deviceNames{i}).wavelengths= deviceSpectrum(:,1)*(10^-9);
+    
+    % Store the spectral values and wavelengths (converted to meters) in a structured array
+    device.(deviceNames{i}).values = deviceSpectrum(:, 2);
+    device.(deviceNames{i}).wavelengths = deviceSpectrum(:, 1) * (10^-9);
 end
 
-%% visualize the spectrum
-% Assuming the 'receptor' and 'device' structures are populated with spectra data
-% as described in the provided code  
-figure;  hold on;
-% Generate a colormap for distinct line colors
+%% Visualize the Spectrum
+% Create a new figure and hold it for multiple plots
+figure; hold on;
+
+% Generate distinct colors for plotting photoreceptor and device spectra
 photoreceptorColors = lines(length(photoreceptorNames));
 deviceColors = lines(length(deviceNames));
 
-% Plot photoreceptor spectra on the left y-axis with dashed lines
+% Plot each photoreceptor spectrum with dashed lines on the left y-axis
 yyaxis left;
 for i = 1:length(photoreceptorNames)
-    % Replace "_" with " " for proper naming in legends
+    % Format photoreceptor names for display in legends
     cleanName = strrep(photoreceptorNames{i}, '_', ' ');
     plot(receptor.(photoreceptorNames{i}).wavelengths * 1e9, receptor.(photoreceptorNames{i}).values, 'LineStyle', '--', 'LineWidth', 2, 'Color', photoreceptorColors(i,:));
-    photoreceptorLegends{i} = cleanName; % Collect names for legend
+    photoreceptorLegends{i} = cleanName; % Collect formatted names for legend
 end
 ylabel('Normalized Photoreceptor Sensitivity');
 xlabel('Wavelength (nm)');
 
-% Plot device spectra on the right y-axis with solid lines
+% Plot each device spectrum with solid lines on the right y-axis
 yyaxis right;
 for i = 1:length(deviceNames)
-    % Replace "_" with " " for proper naming in legends
+    % Format device names for display in legends
     cleanDeviceName = strrep(deviceNames{i}, '_', ' ');
     plot(device.(deviceNames{i}).wavelengths * 1e9, device.(deviceNames{i}).values, 'LineStyle', '-', 'LineWidth', 2, 'Color', deviceColors(i,:));
-    deviceLegends{i} = cleanDeviceName; % Collect names for legend
+    deviceLegends{i} = cleanDeviceName; % Collect formatted names for legend
 end
 ylabel('Device Spectral Value');
 
-% Combine photoreceptor and device names for the legend
+% Combine photoreceptor and device names for the legend and display it
 legendNames = [photoreceptorLegends, deviceLegends];
 legend(legendNames, 'Location', 'Best');
 title('Spectra of Photoreceptors and Devices');
+
+% Stop holding the figure for further plots
 hold off;
 
+%% Compute the Isomerization per Watt for the Spectrum Loaded Above
+% Define parameters related to the collecting area and calibration for light intensity calculation
+collectingArea = 0.37; % Collecting area in um^2, example value for l/m/s cones in primates
+calibrationValue = 17.77 * 1e-9; % Calibration value in Watts, corresponding to input of 1 volt from an LED
+calibrationDiameter = 500; % Diameter of the calibrated area in micrometers
+deviceIndex=1;
+photoreceptorIndex=1;
+% Calculate light intensity that arrives at the photoreceptor in nW/um^2
+lightInt = calibrationValue / (pi * (calibrationDiameter / 2)^2);
 
-%% compute the isomerization per watts for the spectrum loaded above
-% collecting area: l/m/s cones in primate  0.37, stimuli from below or 0.6
-% stimulate from above, that is 1 and 1 for rods
-% in mouse, collecting area is 0.2 for M/S cones from below, and 1 from
-% above.  for rod, that value is 0.5 and 0.87 respectively.
-deviceIndex=1; 
-photoreceptorIndex=3;
-collectingArea= 0.37;
-calibrationValue=17.77; % in nW
-calibrationDiameter=500;  % in uM
-% compute the light intensity (arrives at the photoreceptor)
-lightInt=calibrationValue/pi(calibrationDiameter/2)^2)
+% Calculate light power at individual photoreceptor
+prLight = lightInt * collectingArea;
 
-fprintf('%s\n', ['device ' deviceLegends{deviceIndex}  ' ' 'photoreceptor ', ' ' photoreceptorLegends{photoreceptorIndex}]);
-output = convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.(devNames{chl}), prSpec.(prNames{prChl}), collectingArea, {}, {});
-fprintf('%s %d\n','Isomerization is ', output);
+% Display the selected device and photoreceptor for isomerization calculation
+fprintf('%s\n', ['device ' deviceLegends{deviceIndex} ' ' 'photoreceptor ', ' ' photoreceptorLegends{photoreceptorIndex}]);
 
+% Calculate isomerizations per watt using the calcIsomPerWatt function  
+isom = calcIsomPerWatt(device.(deviceNames{deviceIndex}), receptor.(photoreceptorNames{photoreceptorIndex}));
 
-% in the case of OLED spectrum
-% get the transform matrix from RGB to LMS isom
-collectingArea= 0.37;
-calibrationValue=17.77; % in nW
-calibrationDiameter=500;  % in uM
-delta.rl=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_red_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-delta.gl=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_green_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-delta.bl=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_blue_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-
-delta.rm=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_red_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-delta.gm=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_green_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-delta.bm=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_blue_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-
-delta.rs=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_red_spectrum, ...,
-    prSpec.s_cone_spectrum, collectingArea, {}, {});
-delta.gs=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_green_spectrum, ...,
-    prSpec.s_cone_spectrum, collectingArea, {}, {});
-delta.bs=convisom(1, 'intensity', calibrationValue/(pi*(calibrationDiameter/2)^2),devSpec.microdisplay_below_blue_spectrum, ...,
-    prSpec.s_cone_spectrum, collectingArea, {}, {});
-
-rgbToLms=[delta.rl delta.gl delta.bl; delta.rm delta.gm delta.bm;  delta.rs delta.gs delta.bs]
-lmsToRgb= inv(rgbToLms);
-
-%% in the case of RBU LED on shared 2P rig
-clc; close all;
-collectingArea= 0.37;
-figure; hold all;
-plot(receptor.l_cone_spectrum.wavelengths*10^9,receptor.l_cone_spectrum.values,'r','linewidth',2);
-plot(receptor.m_cone_spectrum.wavelengths*10^9,receptor.m_cone_spectrum.values,'g','linewidth',2);
-plot(receptor.rod_spectrum.wavelengths*10^9,receptor.rod_spectrum.values,'b','linewidth',2);
-plot(device.red_led_spectrum.wavelengths*10^9,device.red_led_spectrum.values,'--r','linewidth',2);
-plot(device.blue_led_spectrum.wavelengths*10^9,device.blue_led_spectrum.values,'--b','linewidth',2);
-plot(device.uv_led_spectrum.wavelengths*10^9,device.uv_led_spectrum.values,'--p','linewidth',2);
-legend('L Cone','M Cone','rod', 'Red LED','Blue LED','UV LED');
-
-
-delta.rl=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-delta.bl=convisom(1, 'intensity', 0.00631565324269389,devSpec.blue_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-delta.ul=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-
-delta.rm=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-delta.bm=convisom(1, 'intensity', 0.00631565324269389,devSpec.blue_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-delta.um=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-
-delta.rr=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.rod_spectrum, collectingArea, {}, {});
-delta.br=convisom(1, 'intensity', 0.00631565324269389,devSpec.blue_led_spectrum, ...,
-    prSpec.rod_spectrum, collectingArea, {}, {});
-delta.ur=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.rod_spectrum, collectingArea, {}, {});
-rbuToLmr=[delta.rl delta.bl delta.ul; delta.rm delta.bm delta.um;  delta.rr delta.br delta.ur];
-lmrToRbu= inv(rbuToLmr);
-
-
-% % visualize the linear mapping
-% [x, y]= meshgrid(0:0.05:1, 0:0.05:1);
-% lIsom=delta.rl.*x+delta.bl.*y;
-% mIsom=delta.rm.*x+delta.bm.*y;
-% figure;
-% s1=surf(x,y,lIsom,'FaceAlpha',0.8); hold all; s2=surf(x,y,mIsom,'FaceAlpha',0.7); colorbar;
-% s1.EdgeColor = 'none'; s2.EdgeColor = 'none';
-%
-% figure; scatter(lIsom(:), mIsom(:));   xlabel('L cone Isom'); ylabel('M cone Isom');
-%% in the case of RGU LED on shared old Slice
-clc; close all; clear delta
-ndf=2.3;
-collectingArea= 0.37/(10^ndf);
-figure; hold all;
-plot(receptor.l_cone_spectrum.wavelengths*10^9,receptor.l_cone_spectrum.values,'r','linewidth',2);
-plot(receptor.m_cone_spectrum.wavelengths*10^9,receptor.m_cone_spectrum.values,'g','linewidth',2);
-plot(receptor.rod_spectrum.wavelengths*10^9,receptor.rod_spectrum.values,'b','linewidth',2);
-plot(device.red_led_spectrum.wavelengths*10^9,device.red_led_spectrum.values,'--r','linewidth',2);
-plot(device.green_led_spectrum.wavelengths*10^9,device.green_led_spectrum.values,'--g','linewidth',2);
-plot(device.uv_led_spectrum.wavelengths*10^9,device.uv_led_spectrum.values,'--p','linewidth',2);
-legend('L Cone','M Cone','rod', 'Red LED','Green LED','UV LED');
-
-
-delta.rl=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-delta.gl=convisom(1, 'intensity', 0.00631565324269389,devSpec.green_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-delta.ul=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-
-delta.rm=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-delta.gm=convisom(1, 'intensity', 0.00631565324269389,devSpec.green_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-delta.um=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-
-delta.rr=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.rod_spectrum, collectingArea, {}, {});
-delta.gr=convisom(1, 'intensity', 0.00631565324269389,devSpec.green_led_spectrum, ...,
-    prSpec.rod_spectrum, collectingArea, {}, {});
-delta.ur=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.rod_spectrum, collectingArea, {}, {});
-
-rguToLmr=[delta.rl delta.gl delta.ul; delta.rm delta.gm delta.um; delta.rr delta.gr delta.ur]
-lmrToRgu= inv(rguToLmr);
-
-
-% visualize the linear mapping
-[x, y]= meshgrid(0:0.05:1, 0:0.05:1);
-lIsom=delta.rl.*x+delta.gl.*y;
-mIsom=delta.rm.*x+delta.gm.*y;
-figure;
-s1=surf(x,y,lIsom,'FaceAlpha',0.8); hold all; s2=surf(x,y,mIsom,'FaceAlpha',0.7); colorbar;
-s1.EdgeColor = 'none'; s2.EdgeColor = 'none';
-
-figure; scatter(lIsom(:), mIsom(:));   xlabel('L cone Isom'); ylabel('M cone Isom');
-%%  compute the range of L,M for given iso-luminance
-close all; clc; clear contrast
-totalLum=0.5*(delta.rm+delta.rl+delta.gm+delta.gl);
-[l, m]= meshgrid(linspace(0,delta.rl+delta.gl,200), linspace(0, delta.rm+delta.gm,200));
-line1=find((m*delta.gl-l*delta.gm)<0);
-line2=find((m*delta.rl-l*delta.rm)>0);
-line3=find(((m-delta.gm)*delta.rl-delta.rm*(l-delta.gl))<0);
-line4=find(((m-delta.rm)*delta.gl-delta.gm*(l-delta.rl))>0);
-index=intersect(intersect(line1,line2), intersect(line3,line4));
-crossIndex= intersect(find(abs(l+m-totalLum)/totalLum< .002),index);
-cl=l(crossIndex); cm=m(crossIndex);
-l=l(index); m=m(index);
-figure; scatter(l,m); hold all; scatter(cl,cm); xlabel('L cone Isom'); ylabel('M cone Isom');
-% get the cross section for the unity line x+y=mean lumi
-
-
-totalLum=linspace(0.01,1,100)*(delta.rm+delta.rl+delta.gm+delta.gl);
-[l, m]= meshgrid(linspace(0,delta.rl+delta.gl,5000), linspace(0, delta.rm+delta.gm,5000));
-line1=find((m*delta.gl-l*delta.gm)<0);
-line2=find((m*delta.rl-l*delta.rm)>0);
-line3=find(((m-delta.gm)*delta.rl-delta.rm*(l-delta.gl))<0);
-line4=find(((m-delta.rm)*delta.gl-delta.gm*(l-delta.rl))>0);
-index=intersect(intersect(line1,line2), intersect(line3,line4));
-for i=1:length(totalLum)
-    crossIndex= intersect(find(abs(l+m-totalLum(i))/totalLum(i)< .01),index);
-    cl=l(crossIndex); cm=m(crossIndex);
-    % L/M contrast
-    contrast.lowBnd(i)= (min(cl)-max(cm))/(min(cl)+max(cm));
-    contrast.upBnd(i)= (max(cl)-min(cm))/(max(cl)+min(cm));
-
-end
-% plot the range
-f=figure;  hold all;
-plot(totalLum, contrast.lowBnd,'linewidth',2);
-plot(totalLum,contrast.upBnd,'linewidth',2);
-xlabel('Total Luminance in Isom/cone/s');
-ylabel(' Contrast bounds  (L-M)/(L+M)');
-%% generate the Red and Green Gun series
-close all; clc;
-tempFreq=6; totalLumContrast=0.9; lmContrast=0.65;  % defined as (L-M)/(L+M)
-preTime=1000; stimTime=2000; tailTime=1000; sampleRate=1000;
-lumSteps=[2000, 8000];
-totalLum=lumSteps(1)*ones(1, preTime+stimTime+tailTime); totalLum(preTime:preTime+stimTime)=lumSteps(2);
-x=(1:numel(totalLum))/sampleRate;
-totalLum=totalLum.*(1+totalLumContrast*sin(2*pi*tempFreq*x));
-% totalLum(preTime+stimTime+1:end)=totalLum(1:preTime);
-lIsom=totalLum*(1+lmContrast)/2;
-mIsom=totalLum*(1-lmContrast)/2;
-rgIntensity= lmToRg*[lIsom; mIsom];
-figure; subplot(2,1,1);
-plot(x, totalLum,'k');
-hold all;  plot(x, lIsom,'r'); plot(x, mIsom,'g'); legend('total Lum','L cone isom','M cone Isom'); legend boxoff;
-subplot(2,1,2);
-plot(x, rgIntensity(1,:),'r'); hold all;  plot(x, rgIntensity(2,:),'g'); hold off;
-legend('red gun','green gun');
-%% case for lightcrafter in confocal
-clc; close all;
-collectingArea= 0.37;
-figure; hold all;
-plot(receptor.l_cone_spectrum.wavelengths*10^9,receptor.l_cone_spectrum.values,'r','linewidth',2);
-plot(receptor.m_cone_spectrum.wavelengths*10^9,receptor.m_cone_spectrum.values,'g','linewidth',2);
-plot(receptor.s_cone_spectrum.wavelengths*10^9,receptor.s_cone_spectrum.values,'b','linewidth',2);
-plot(device.red_led_spectrum.wavelengths*10^9,device.red_led_spectrum.values,'--r','linewidth',2);
-plot(device.blue_led_spectrum.wavelengths*10^9,device.blue_led_spectrum.values,'--b','linewidth',2);
-plot(device.uv_led_spectrum.wavelengths*10^9,device.uv_led_spectrum.values,'--p','linewidth',2);
-legend('L Cone','M Cone','S Cone', 'Red LED','Blue LED','UV LED');
-
-
-delta.rl=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-delta.bl=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-delta.ul=convisom(1, 'intensity', 0.0167133750446899,devSpec.red_led_spectrum, ...,
-    prSpec.l_cone_spectrum, collectingArea, {}, {});
-
-delta.rm=convisom(1, 'intensity', 0.00631565324269389,devSpec.blue_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-delta.bm=convisom(1, 'intensity', 0.00631565324269389,devSpec.blue_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-delta.um=convisom(1, 'intensity', 0.00631565324269389,devSpec.blue_led_spectrum, ...,
-    prSpec.m_cone_spectrum, collectingArea, {}, {});
-
-delta.rs=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.s_cone_spectrum, collectingArea, {}, {});
-delta.bs=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.s_cone_spectrum, collectingArea, {}, {});
-delta.us=convisom(1, 'intensity', 0.00412057864005028,devSpec.uv_led_spectrum, ...,
-    prSpec.s_cone_spectrum, collectingArea, {}, {});
-rbuToLms=[delta.rl delta.bl delta.ul; delta.rm delta.bm delta.um;  delta.rs delta.bs delta.us];
-lmsToRbu= inv(rbuToLms);
+% Adjust isomerization rate by the light power at the photoreceptor
+isom = isom * prLight;
+fprintf('%s\n', ['device ' deviceLegends{deviceIndex} ' ' 'photoreceptor ', ' ' photoreceptorLegends{photoreceptorIndex}]);
+fprintf(['The isomerization rate per unit input is %.2f per %s photoreceptor per second from device %s. ...' ...
+    '\n'], isom, photoreceptorLegends{photoreceptorIndex}, deviceLegends{deviceIndex});
