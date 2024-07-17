@@ -110,3 +110,4 @@ isom = calcIsomPerWatt(device.(deviceNames{deviceIndex}), receptor.(photorecepto
 isom = isom * prLight;
 fprintf(['The isomerization rate per unit input is %.2f per %s photoreceptor per second from device %s.' ...
     '\n'], isom, photoreceptorLegends{photoreceptorIndex}, deviceLegends{deviceIndex});
+

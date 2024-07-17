@@ -14,7 +14,7 @@ modelType = 'peripheralPrimateCone'; % Example model type
 params = initPhotoreceptorParams(modelType);
 
 % Calculate the dark current based on initialized parameters.
-params.darkCurrent = params.gdark^params.h * params.k;
+params.darkCurrent = params.gdark^params.n * params.k;
 
 % Initialize linear model coefficients for all photoreceptor types.
 linearModelCoef = defineLinearModelCoefficients();

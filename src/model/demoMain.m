@@ -6,7 +6,7 @@
 %% -------------------------------------------------------
 modelType = 'peripheralPrimateCone'; % Example model type
 params = initPhotoreceptorParams(modelType);
-params.darkCurrent = params.gdark^params.h * params.k;
+params.darkCurrent = params.gdark^params.n * params.k;
 
 %% -------------------------------------------------------
 %% Step 2: Define Linear Model Coefficients to generate target responses

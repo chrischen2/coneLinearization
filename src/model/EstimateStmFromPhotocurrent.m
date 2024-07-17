@@ -25,19 +25,19 @@ pdeFilter =  exp(-params.tme * params.phi);
 % model parameters constrained by steady state conditions for Eqs. 5
 % and 6
 cur2Ca = params.beta * params.cdark / params.darkCurrent;                % get q using steady state
-cyclaseMax = (params.eta/params.phi) * params.gdark * (1 + (params.cdark / params.hillaffinity)^params.hillcoef);		% get smax using steady state
+cyclaseMax = (params.eta/params.phi) * params.gdark * (1 + (params.cdark / params.kGC)^params.m);		% get smax using steady state
 
 currentResponse = params.CombinedResponse;
 origStim = params.CombinedStim;
 
 % generate cGMP and Ca from current
-params.TargetcGMP = (-currentResponse / params.k).^(1/params.h);
+params.TargetcGMP = (-currentResponse / params.k).^(1/params.n);
 calciumFilter = params.timeStep * exp(-params.tme * params.beta);
 
 params.TargetCalcium = -cur2Ca * real(ifft(fft(currentResponse) .* (fft(calciumFilter))));
 
 % calculate PDE from cGMP and Ca
-cyclaseRate = cyclaseMax ./ (1 + (params.TargetCalcium / params.hillaffinity).^params.hillcoef);
+cyclaseRate = cyclaseMax ./ (1 + (params.TargetCalcium / params.kGC).^params.m);
 
 % calculate PDE from Eq. 3
 gDeriv = diff(params.TargetcGMP) / params.timeStep;

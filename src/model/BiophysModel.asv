@@ -11,8 +11,10 @@ function [params]=BiophysModel(params)
     %       - n: Cooperativity for the relation of cGMP to current.
     %       - cdark: Calcium concentration in darkness.
     %       - beta: Rate constant for calcium removal (1/sec).
-    %       - m: Cooperativity for the cyclase (Hill coefficient). 
-    %       - kGC: Hill affinity for the cyclase. 
+    %       - kGC: Cooperativity for the cyclase (Hill coefficient). denoted
+    %       as K_GC in preprint https://doi.org/10.7554/eLife.93795.2
+    %       - hillaffinity: Hill affinity for the cyclase. denoted as "m" in
+    %       preprint https://doi.org/10.7554/eLife.93795.2
     %       - gamma: Scaling factor for stimulus (rate of increase in opsin activity per R*/sec).
     %       - biophysFlag: Flag to select between biophysical (1) and linear (0) models.
     %       - tme: Time vector for the simulation.
@@ -39,7 +41,7 @@ if (params.biophysFlag == 1)
     params.gdark = (2 * params.darkCurrent / params.k)^(1/params.n);
 
     cur2ca = params.beta * params.cdark / params.darkCurrent;                % get q using steady state
-    smax = params.eta/params.phi * params.gdark * (1 + (params.cdark / params.kGC)^params.m);		% get smax using steady state
+    smax = params.eta/params.phi * params.gdark * (1 + (params.cdark / params.hillaffinity)^params.hillcoef);		% get smax using steady state
 
     clear g s c p r
 
@@ -64,7 +66,7 @@ if (params.biophysFlag == 1)
         % Update calcium concentration
         c(pnt) = c(pnt-1) + TimeStep * (cur2ca * params.k * g(pnt-1)^params.n - params.beta * c(pnt-1));
         % Update synthesis rate
-        s(pnt) = smax / (1 + (c(pnt) / params.kGC)^params.m);
+        s(pnt) = smax / (1 + (c(pnt) / params.hillaffinity)^params.hillcoef);
         % Update cGMP concentration
         g(pnt) = g(pnt-1) + TimeStep * (s(pnt-1) - p(pnt-1) * g(pnt-1));
     end
