@@ -36,7 +36,7 @@ if (params.biophysFlag == 1)
     % gdark and cgmp2cur trade with each other to set dark current
     % calculate the cGMP concentration in dark based on dark current,
     % cooperativity, and cGMP-current relation
-    params.gdark = (2 * params.darkCurrent / params.k)^(1/params.n);
+    params.gdark = (params.darkCurrent / params.k)^(1/params.n);
 
     cur2ca = params.beta * params.cdark / params.darkCurrent;                % get q using steady state
     smax = params.eta/params.phi * params.gdark * (1 + (params.cdark / params.kGC)^params.m);		% get smax using steady state
