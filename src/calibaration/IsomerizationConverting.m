@@ -1,9 +1,52 @@
+%% Light Level Calibration Workflow Example (https://elifesciences.org/reviewed-preprints/93795v2)
+% IMPORTANT NOTE: This script is an example of the workflow for 
+% and isomerization rate calculation. You will need to modify certain values
+% (especially calibration values and file paths) based on your own devices,
+% experimental setup, and data. Please review and adjust all parameters
+% marked with "ADJUST" comments before running this script with your own data.
+
 % Clear all variables from the workspace and close all figures to ensure a clean start
 clearvars; close all;
 
-%% Load the Source Spectrum
-% Define the species to load corresponding photoreceptor spectra, can be 'mouse' or 'primate'
-species = 'mouse';
+%% User Input Section
+% Define the species to load corresponding photoreceptor spectra
+species = 'mouse'; % Can be 'mouse' or 'primate'
+
+% ADJUST: Define the photoreceptor to analyze
+photoreceptorName = 'rod'; % e.g., 'rod', 's_cone', 'm_cone', 'l_cone' etc.
+
+% ADJUST: Define the device to analyze
+deviceName = 'uv_led'; % e.g., 'uv_led', 'red_led', etc.
+
+% Define parameters related to the collecting area and calibration for light intensity calculation
+if strcmp(species, 'mouse')
+    if strcmp(photoreceptorName, 'rod')
+        collectingArea = 0.5; % Collecting area in um^2 for mouse rods
+    else
+        collectingArea = 0.2; % Collecting area in um^2 for mouse cones
+    end
+elseif strcmp(species, 'primate')
+    if strcmp(photoreceptorName, 'rod')
+        collectingArea = 1.0; % Collecting area in um^2 for primate rods
+    else
+        collectingArea = 0.37; % Collecting area in um^2 for primate cones
+    end
+else
+    error('Invalid species selected. Choose either "mouse" or "primate".');
+end
+
+% NOTE: The following two values are dependent upon the calibration of each individual lab's device.
+% ADJUST: They should be modified according to your specific experimental setup.
+calibrationValue = 17.77 * 1e-9; % Calibration value in Watts, corresponding to input of 1 volt from an LED.
+                                 % This value is specific to the LED and power meter used in your setup.
+calibrationDiameter = 500; % Diameter of the calibrated area in micrometers.
+                           % This value depends on the size of the light spot used during calibration.
+
+% Display the calibration values for user verification
+fprintf('Current calibration settings:\n');
+fprintf('Calibration Value: %.2e Watts per volt\n', calibrationValue);
+fprintf('Calibration Diameter: %d micrometers\n', calibrationDiameter);
+fprintf('Please ensure these values match your lab\'s specific calibration.\n\n');
 
 % Construct the path to the folder containing spectral data files for the specified species
 spectrum_path = fullfile(pwd, 'spectrums/sources', species);
@@ -27,6 +70,11 @@ for i = 1:length(spectrum_files)
     receptor.(photoreceptorNames{i}).wavelengths = spectrum(:, 1) * (10^-9);
 end
 
+% Validate user input for photoreceptor
+if ~ismember(photoreceptorName, photoreceptorNames)
+    error('Invalid photoreceptor name. Available options are: %s', strjoin(photoreceptorNames, ', '));
+end
+
 % Load the Device Spectrum
 % Define the path to the folder containing device spectral data
 device_path = fullfile(pwd, 'spectrums/devices/');
@@ -48,6 +96,12 @@ for i = 1:length(device_files)
     % Store the spectral values and wavelengths (converted to meters) in a structured array
     device.(deviceNames{i}).values = deviceSpectrum(:, 2);
     device.(deviceNames{i}).wavelengths = deviceSpectrum(:, 1) * (10^-9);
+end
+
+
+% Validate user input for device
+if ~ismember(deviceName, deviceNames)
+    error('Invalid device name. Available options are: %s', strjoin(deviceNames, ', '));
 end
 
 %% Visualize the Spectrum
@@ -88,12 +142,6 @@ title('Spectra of Photoreceptors and Devices');
 hold off;
 
 %% Compute the Isomerization per Watt for the Spectrum Loaded Above
-% Define parameters related to the collecting area and calibration for light intensity calculation
-collectingArea = 0.37; % Collecting area in um^2, example value for l/m/s cones in primates
-calibrationValue = 17.77 * 1e-9; % Calibration value in Watts, corresponding to input of 1 volt from an LED
-calibrationDiameter = 500; % Diameter of the calibrated area in micrometers
-deviceIndex=1;
-photoreceptorIndex=3;
 % Calculate light intensity that arrives at the photoreceptor in nW/um^2
 lightInt = calibrationValue / (pi * (calibrationDiameter / 2)^2);
 
@@ -101,10 +149,13 @@ lightInt = calibrationValue / (pi * (calibrationDiameter / 2)^2);
 prLight = lightInt * collectingArea;
 
 % Display the selected device and photoreceptor for isomerization calculation
-fprintf('%s\n', ['device ' deviceLegends{deviceIndex} ' ' 'photoreceptor ', ' ' photoreceptorLegends{photoreceptorIndex}]);
+fprintf('Selected species: %s\n', species);
+fprintf('Selected photoreceptor: %s\n', photoreceptorName);
+fprintf('Selected device: %s\n', deviceName);
+fprintf('Collecting area: %.2f μm^2\n', collectingArea);
 
 % Calculate isomerizations per watt using the calcIsomPerWatt function  
-isom = calcIsomPerWatt(device.(deviceNames{deviceIndex}), receptor.(photoreceptorNames{photoreceptorIndex}));
+isom = calcIsomPerWatt(device.(deviceName), receptor.(photoreceptorName));
 
 % Adjust isomerization rate by the light power at the photoreceptor
 isom = isom * prLight;
