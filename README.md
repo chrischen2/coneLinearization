@@ -1,4 +1,4 @@
-Welcome to the  repository for the "Light Adaptation Clamp" tool, as described in our recent publication [Chen 2023](https://www.biorxiv.org/content/10.1101/2023.10.20.563304v1). This repository hosts both the source code and the detailed mathematical formulations underlying the tool's functionality.
+Welcome to the  repository for the "Light Adaptation Clamp" tool, as described in our recent publication [Chen 2024](https://elifesciences.org/articles/93795). This repository hosts both the source code and the detailed mathematical formulations underlying the tool's functionality.
 
 **About the Light Adaptation Clamp Tool**
 
@@ -16,4 +16,4 @@ If you have suggestions, bug reports, or improvements, please feel free to open 
 
 **Citation**
 
-If you use this tool in your research, please cite: [Chen 2023](https://www.biorxiv.org/content/10.1101/2023.10.20.563304v1)
+If you use this tool in your research, please cite: [Chen 2024](https://elifesciences.org/articles/93795)
